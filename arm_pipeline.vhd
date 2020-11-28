@@ -1,12 +1,16 @@
 ---------------------------------------------------------------
--- arm_single.vhd
+-- arm_pipeline.vhd - PCS3612
+-- Pipeline implementation of a subset of ARMv4
+-- Matheus Guilherme Gonçalves - 9345126
+-- Paulo Massayoshi Hirami - 8992711
+-- Rafael Augusto Baptista C. das Neves - 9373372
+-- Based on arm_single.vhd implementation from
 -- David_Harris@hmc.edu, Sarah.Harris@unlv.edu 6 March 2014
--- Single-cycle implementation of a subset of ARMv4
 --
 -- Compile in ModelSim at the command line with the command 
--- vcom -2008 arm_single.vhd
+-- vcom -check_synthesis -2008 arm_pipeline.vhd
 -- Expect plenty of simulation warnings of metavalues detected
--- run 210
+-- vsim -c -do "run -all" testbench
 -- Expect at time 205 ns a message of
 -- Failure: NO ERRORS: Simulation succeeded
 -- when the value 7 is written to address 100 (0x64)
