@@ -213,8 +213,8 @@ entity regD is generic(W : integer);
        FlagWriteD:  in STD_LOGIC_VECTOR (1 downto 0);
        CondD:       in STD_LOGIC_VECTOR(3 downto 0);
        FlagsD:      in STD_LOGIC_VECTOR(3 downto 0);
-       rd2D:        in STD_LOGIC_VECTOR(W-1 downto 0);
        rd1D:        in STD_LOGIC_VECTOR(W-1 downto 0);
+       rd2D:        in STD_LOGIC_VECTOR(W-1 downto 0);
        ExtImmD:     in STD_LOGIC_VECTOR(31 downto 0);
        WA3D:        in STD_LOGIC_VECTOR(3 downto 0);
        PCSrcE:      out STD_LOGIC;
@@ -345,6 +345,7 @@ architecture struct of arm is
          ALUControl:        out STD_LOGIC_VECTOR(1 downto 0);
          MemWrite:          out STD_LOGIC;
          MemtoReg:          out STD_LOGIC;
+         FlagWrite:         out STD_LOGIC_VECTOR(1 downto 0);
          PCSrc:             out STD_LOGIC);
   end component;
   component datapath
@@ -356,6 +357,7 @@ architecture struct of arm is
          ALUControl:        in  STD_LOGIC_VECTOR(1 downto 0);
          MemtoReg:          in  STD_LOGIC;
          PCSrc:             in  STD_LOGIC;
+         FlagWrite:         in STD_LOGIC_VECTOR(1 downto 0);
          ALUFlags:          out STD_LOGIC_VECTOR(3 downto 0);
          PC:                buffer STD_LOGIC_VECTOR(31 downto 0);
          Instr:             in  STD_LOGIC_VECTOR(31 downto 0);
@@ -363,16 +365,16 @@ architecture struct of arm is
          ReadData:          in  STD_LOGIC_VECTOR(31 downto 0));
   end component;
   signal RegWrite, ALUSrc, MemtoReg, PCSrc: STD_LOGIC;
-  signal RegSrc, ImmSrc, ALUControl: STD_LOGIC_VECTOR(1 downto 0);
+  signal RegSrc, ImmSrc, ALUControl, FlagWrite: STD_LOGIC_VECTOR(1 downto 0);
   signal ALUFlags: STD_LOGIC_VECTOR(3 downto 0);
 begin
   cont: controller port map(clk, reset, Instr(31 downto 12), 
                             ALUFlags, RegSrc, RegWrite, ImmSrc, 
                             ALUSrc, ALUControl, MemWrite, 
-                            MemtoReg, PCSrc);
+                            MemtoReg, FlagWrite, PCSrc);
   dp: datapath port map(clk, reset, RegSrc, RegWrite, ImmSrc, 
                         ALUSrc, ALUControl, MemtoReg, PCSrc, 
-                        ALUFlags, PC, Instr, ALUResult, 
+                        FlagWrite, ALUFlags, PC, Instr, ALUResult, 
                         WriteData, ReadData);
 end;
 
@@ -388,6 +390,7 @@ entity controller is -- single cycle control decoder
        ALUControl:        out STD_LOGIC_VECTOR(1 downto 0);
        MemWrite:          out STD_LOGIC;
        MemtoReg:          out STD_LOGIC;
+       FlagWrite:         out STD_LOGIC_VECTOR(1 downto 0);
        PCSrc:             out STD_LOGIC);
 end;
 
@@ -420,7 +423,8 @@ begin
                        RegSrc, ALUControl);
   cl: condlogic port map(clk, reset, Instr(31 downto 28), 
                          ALUFlags, FlagW, PCS, RegW, MemW,
-                         PCSrc, RegWrite, MemWrite);                
+                         PCSrc, RegWrite, MemWrite); 
+  FlagWrite <= FlagW;               
 end;
 
 library IEEE; use IEEE.STD_LOGIC_1164.all;
@@ -560,6 +564,7 @@ entity datapath is
        ALUControl:        in  STD_LOGIC_VECTOR(1 downto 0);
        MemtoReg:          in  STD_LOGIC;
        PCSrc:             in  STD_LOGIC;
+       FlagWrite:         in STD_LOGIC_VECTOR(1 downto 0);
        ALUFlags:          out STD_LOGIC_VECTOR(3 downto 0);
        PC:                buffer STD_LOGIC_VECTOR(31 downto 0);
        Instr:             in  STD_LOGIC_VECTOR(31 downto 0);
@@ -600,6 +605,11 @@ architecture struct of datapath is
          s:      in  STD_LOGIC;
          y:      out STD_LOGIC_VECTOR(width-1 downto 0));
   end component;
+  component mux4 generic(width: integer);
+    port(D0, D1, D2, D3  : in std_logic_vector(W-1 downto 0);
+         S0, S1          : in std_logic;
+         Y               : out std_logic_vector(W-1 downto 0));
+  end component;
   component regF generic(width: integer);
     port(clk:    in STD_LOGIC;
          instrF: in STD_LOGIC_VECTOR(31 downto 0);
@@ -617,8 +627,8 @@ architecture struct of datapath is
          FlagWriteD:  in STD_LOGIC_VECTOR (1 downto 0);
          CondD:       in STD_LOGIC_VECTOR(3 downto 0);
          FlagsD:      in STD_LOGIC_VECTOR(3 downto 0);
-         rd2D:        in STD_LOGIC_VECTOR(W-1 downto 0);
          rd1D:        in STD_LOGIC_VECTOR(W-1 downto 0);
+         rd2D:        in STD_LOGIC_VECTOR(W-1 downto 0);
          ExtImmD:     in STD_LOGIC_VECTOR(31 downto 0);
          WA3D:        in STD_LOGIC_VECTOR(3 downto 0);
          PCSrcE:      out STD_LOGIC;
@@ -668,9 +678,9 @@ architecture struct of datapath is
          ALUOutW:   out STD_LOGIC_VECTOR(W-1 downto 0);
          WA3W:      out STD_LOGIC_VECTOR(3 downto 0));
   end component;
-  signal PCNext, PCPlus4:          STD_LOGIC_VECTOR(31 downto 0);
+  signal PCNext, PCNext2, PCPlus4: STD_LOGIC_VECTOR(31 downto 0);
   signal ExtImm, Result:           STD_LOGIC_VECTOR(31 downto 0);
-  signal SrcA, SrcB:               STD_LOGIC_VECTOR(31 downto 0);
+  signal SrcA, SrcAE, SrcBE:       STD_LOGIC_VECTOR(31 downto 0);
   signal RA1, RA2:                 STD_LOGIC_VECTOR(3 downto 0);
   signal InstrD:                   STD_LOGIC_VECTOR(31 downto 0);
   signal PCSrcE, RegWriteE, MemtoRegE, MemWriteE, ALUSrcE: STD_LOGIC;
@@ -679,34 +689,53 @@ architecture struct of datapath is
   signal CondE, FlagsE, WA3E: STD_LOGIC_VECTOR(3 downto 0);
   signal flagWriteE: STD_LOGIC_VECTOR(1 downto 0);
 begin
-  -- next PC logic
-  pcmux: mux2 generic map(32)
+  -- Fetch Stage
+  pcmux1: mux2 generic map(32)
               port map(PCPlus4, Result, PCSrc, PCNext);
-  pcreg: flopr generic map(32) port map(clk, reset, PCNext, PC);
+  pcmux2: mux2 generic map(32)
+              port map(PCNext, ALUResultE, BranchTakenE, PCNext2)
+  pcreg: flopr generic map(32) port map(clk, reset, PCNext2, PC);
   pcadd1: adder port map(PC, X"00000004", PCPlus4);
   regFD: regF generic map(32) port map (clk, Instr, InstrD)
 
-  -- register file logic
+  -- Decode Stage
   ra1mux: mux2 generic map (4)
     port map(InstrD(19 downto 16), "1111", RegSrc(0), RA1);
   ra2mux: mux2 generic map (4) port map(InstrD(3 downto 0), 
              InstrD(15 downto 12), RegSrc(1), RA2);
-  rf: regfile port map(clk, RegWrite, RA1, RA2, 
-                      Instr(15 downto 12), Result, 
+  rf: regfile port map(clk, RegWrite, RA1, RA2, WA3W, Result, 
                       PCPlus4, SrcA, WriteData);
   resmux: mux2 generic map(32) 
     port map(ALUResult, ReadData, MemtoReg, Result);
   ext: extend port map(InstrD(23 downto 0), ImmSrc, ExtImm);
   regDE: regD generic map (32)
-    port map(clk, PCSrc, RegWrite, MemToReg, MEMWRITETDB, ALUControl, BRANCHTBD, ALUSrc, FLAGWRITETDB,
-             CONDTDB, FLAGSTBD, RD2TBD, RD1TBD, EXTIMMTBD, InstrD(15 downto 12), PCSrcE, RegWriteE, 
+    port map(clk, PCSrc, RegWrite, MemToReg, MEMWRITETDB, ALUControl, BRANCHTBD, ALUSrc, FlagWrite,
+             Instr(31 downto 28), FLAGSTBD, SrcA, WriteData, EXTIMMTBD, InstrD(15 downto 12), PCSrcE, RegWriteE, 
              MemtoRegE, MemWriteE, ALUControlE, BranchE, ALUSrcE, FlagWriteE, CondE, FlagsE, rd1E,
              rd2E, ExtImmE, WA3E);
 
-  -- ALU logic
+  -- Execute Stage
+  muxSrcA: mux4 generic map(32)
+    port map(rd1E, Result, ALUOutM, "00000000000000000000000000000000", ForwardAE(1), 
+             ForwardAE(0), SrcAE);
+  muxSrcB: mux4 generic map(32)
+    port map(rd2E, Result, ALUOutM, "00000000000000000000000000000000", ForwardBE(1),
+             ForwardBE(0), WriteData);
   srcbmux: mux2 generic map(32) 
-    port map(WriteData, ExtImm, ALUSrc, SrcB);
-  i_alu: alu port map(SrcA, SrcB, ALUControl, ALUResult, ALUFlags);
+    port map(WriteData, ExtImmE, ALUSrcE, SrcBE);
+  i_alu: alu port map(SrcAE, SrcBE, ALUControlE, ALUResultE, ALUFlags);
+  regEM: regE generic map (32)
+    port map(clk, PCSrcE, RegWriteE, MemtoRegE, MemWriteE, ALUResultE, WriteData, WA3E,
+             PCSrcM, RegWriteM, MemtoRegM, MemWriteM, ALUOutM, WriteDataM, WA3M);
+
+  -- Memory Stage
+  regMW: regM generic map (32)
+    port map(clk, PCSrcM, RegWriteM, ReadData, ALUOutM, WA3M, PCSrcW, RegWriteW, MemtoRegW,
+             ReadDataW, ALUOutW, WA3W);
+
+  -- Write Back Stage
+  muxWB: mux2 generic map(32)
+    port map(ReadDataW, ALUOutW, MemtoRegW, Result);
 end;
 
 library IEEE; use IEEE.STD_LOGIC_1164.all; 
