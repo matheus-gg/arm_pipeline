@@ -184,146 +184,6 @@ begin
 end;
 
 library IEEE; use IEEE.STD_LOGIC_1164.all;
-entity regF is generic(W : integer);
-  port(clk:    in STD_LOGIC;
-       instrF: in STD_LOGIC_VECTOR(31 downto 0);
-       instrD: out STD_LOGIC_VECTOR(31 downto 0));
-end regF;
-
-architecture behave of regF is
-begin
-  process(clk)
-  begin
-    if(clk'event and clk = '1') then
-      instrD <= instrF;
-    end if;
-  end process;
-end behave;
-
-library IEEE; use IEEE.STD_LOGIC_1164.all;
-entity regD is generic(W : integer);
-  port(clk:         in STD_LOGIC;
-       PCSrcD:      in STD_LOGIC;
-       RegWriteD:   in STD_LOGIC;
-       MemtoRegD:   in STD_LOGIC;
-       MemWriteD:   in STD_LOGIC;
-       ALUControlD: in STD_LOGIC_VECTOR(2 downto 0);
-       BranchD:     in STD_LOGIC_VECTOR(W-1 downto 0);
-       ALUSrcD:     in STD_LOGIC;
-       FlagWriteD:  in STD_LOGIC_VECTOR (1 downto 0);
-       CondD:       in STD_LOGIC_VECTOR(3 downto 0);
-       FlagsD:      in STD_LOGIC_VECTOR(3 downto 0);
-       rd1D:        in STD_LOGIC_VECTOR(W-1 downto 0);
-       rd2D:        in STD_LOGIC_VECTOR(W-1 downto 0);
-       ExtImmD:     in STD_LOGIC_VECTOR(31 downto 0);
-       WA3D:        in STD_LOGIC_VECTOR(3 downto 0);
-       PCSrcE:      out STD_LOGIC;
-       RegWriteE:   out STD_LOGIC;
-       MemtoRegE:   out STD_LOGIC;
-       MemWriteE:   out STD_LOGIC;
-       ALUControlE: out STD_LOGIC_VECTOR(2 downto 0);
-       BranchE:     out STD_LOGIC_VECTOR(W-1 downto 0);
-       ALUSrcE:     out STD_LOGIC; 
-       FlagWriteE:  out STD_LOGIC_VECTOR(1 downto 0);
-       CondE:       out STD_LOGIC_VECTOR(3 downto 0);
-       FlagsE:      out STD_LOGIC_VECTOR(3 downto 0);
-       rd1E:        out STD_LOGIC_VECTOR(W-1 downto 0); 
-       rd2E:        out STD_LOGIC_VECTOR(W-1 downto 0);
-       ExtImmE:     out STD_LOGIC_VECTOR(31 downto 0);
-       WA3E:        out STD_LOGIC_VECTOR(3 downto 0));
-end regD;
-
-architecture behave of regD is
-begin
-  process(clk)
-  begin
-    if(clk'event and clk = '1') then
-      PCSrcE <= PCSrcD;
-      RegWriteE <= RegWriteD;
-      MemtoRegE <= MemtoRegD;
-      MemWriteE <= MemWriteD
-      ALUControlE <= ALUControlD;
-      BranchE <= BranchD;
-      ALUSrcE <= ALUSrcD;
-      FlagWriteE <= FlagWriteD;
-      CondE <= CondD;
-      FlagsE <= FlagsD;
-      rd1E <= rd1D;
-      rd2E <= rd2D;
-      ExtImmE <= ExtImmD;
-      WA3E <= WA3D;
-    end if;
-  end process;
-end behave;
-
-library IEEE; use IEEE.STD_LOGIC_1164.all;
-entity regE is generic(W : integer);
-  port(clk:        in STD_LOGIC;
-       PCSrcE:     in STD_LOGIC;
-       RegWriteE:  in STD_LOGIC;
-       MemtoRegE:  in STD_LOGIC;
-       MemWriteE:  in STD_LOGIC;
-       ALUResultE: in STD_LOGIC_VECTOR(W-1 downto 0);
-       WriteDataE: in STD_LOGIC_VECTOR(W-1 downto 0);
-       WA3E:       in STD_LOGIC_VECTOR(3 downto 0);
-       PCSrcM:     out STD_LOGIC;
-       RegWriteM:  out STD_LOGIC;
-       MemtoRegM:  out STD_LOGIC;
-       MemWriteM:  out STD_LOGIC;
-       ALUResultM: out STD_LOGIC_VECTOR(W-1 downto 0);
-       WriteDataM: out STD_LOGIC_VECTOR(W-1 downto 0);
-       WA3M:       out STD_LOGIC_VECTOR(3 downto 0));
-end regE;
-
-architecture behave of regE is
-begin
-  process(clk)
-  begin
-    if(clk'event and clk = '1') then
-      PCSrcM <= PCSrcE;
-      RegWriteM <= RegWriteE;
-      MemtoRegM <= MemtoRegE;
-      MemWriteM <= MemWriteE;
-      ALUResultM <= ALUResultE;
-      WriteDataM <= WriteDataE;
-      WA3M <= WA3E;
-    end if;
-  end process;
-end behave;
-
-library IEEE; use IEEE.STD_LOGIC_1164.all;
-entity regM is generic(W : integer);
-  port(clk:       in STD_LOGIC;
-       PCSrcM:    in STD_LOGIC;
-       RegWriteM: in STD_LOGIC;
-       MemtoRegM: in STD_LOGIC;
-       ReadDataM: in STD_LOGIC_VECTOR(W-1 downto 0);
-       ALUOutM:   in STD_LOGIC_VECTOR(W-1 downto 0);
-       WA3M:      in STD_LOGIC_VECTOR(3 downto 0);
-       PCSrcW:    out STD_LOGIC;
-       RegWriteW: out STD_LOGIC;
-       MemtoRegW: out STD_LOGIC;
-       ReadDataW: out STD_LOGIC_VECTOR(W-1 downto 0);
-       ALUOutW:   out STD_LOGIC_VECTOR(W-1 downto 0);
-       WA3W:      out STD_LOGIC_VECTOR(3 downto 0));
-end regM;
-
-architecture behave of regM is
-begin
-  process(clk)
-  begin
-    if(clk'event and clk = '1') then
-      PCSrcW <= PCSrcM;
-      RegWriteW <= RegWriteM;
-      MemtoRegW <= MemtoRegM;
-      ReadDataW <= ReadDataM;
-      ALUOutW <= ALUOutM;
-      WA3W <= WA3M;
-    end if;
-  end process;
-end behave;
-
-library IEEE; use IEEE.STD_LOGIC_1164.all;
 entity arm is -- single cycle processor
   port(clk, reset:        in  STD_LOGIC;
        PC:                out STD_LOGIC_VECTOR(31 downto 0);
@@ -358,6 +218,7 @@ architecture struct of arm is
          ALUControlE:        in  STD_LOGIC_VECTOR(1 downto 0);
          MemtoRegW:          in  STD_LOGIC;
          PCSrcW:             in  STD_LOGIC;
+		 MemWriteD:          in STD_LOGIC;
          FlagWriteD:         in STD_LOGIC_VECTOR(1 downto 0);
          FlagWriteE:         out STD_LOGIC_VECTOR(1 downto 0);
          ALUFlags:          out STD_LOGIC_VECTOR(3 downto 0);
@@ -377,7 +238,7 @@ begin
                             ALUSrc, ALUControl, MemWrite, 
                             MemtoReg, FlagWrite1, FlagWrite2, PCSrc);
   dp: datapath port map(clk, reset, RegSrc, RegWrite, ImmSrc, 
-                        ALUSrc, ALUControl, MemtoReg, PCSrc, 
+                        ALUSrc, ALUControl, MemtoReg, PCSrc, MemWrite,
                         FlagWrite1, FlagWrite2, ALUFlags, PC, Instr, 
                         InstrD, ALUResult, WriteData, ReadData);
 end;
@@ -568,6 +429,7 @@ entity datapath is
        ALUControlE:        in  STD_LOGIC_VECTOR(1 downto 0);
        MemtoRegW:          in  STD_LOGIC;
        PCSrcW:             in  STD_LOGIC;
+	   MemWriteD:          in STD_LOGIC;
        FlagWriteD:         in STD_LOGIC_VECTOR(1 downto 0);
        FlagWriteE:         out STD_LOGIC_VECTOR(1 downto 0);
        ALUFlags:          out STD_LOGIC_VECTOR(3 downto 0);
@@ -612,11 +474,11 @@ architecture struct of datapath is
          y:      out STD_LOGIC_VECTOR(width-1 downto 0));
   end component;
   component mux4 generic(width: integer);
-    port(D0, D1, D2, D3  : in std_logic_vector(W-1 downto 0);
-         S0, S1          : in std_logic;
-         Y               : out std_logic_vector(W-1 downto 0));
+    port(D0, D1, D2, D3  : in std_logic_vector(width-1 downto 0);
+         S               : in std_logic_vector(1 downto 0);
+         Y               : out std_logic_vector(width-1 downto 0));
   end component;
-  component regF generic(width: integer);
+  component regF
     port(clk:    in STD_LOGIC;
          instrF: in STD_LOGIC_VECTOR(31 downto 0);
          instrD: out STD_LOGIC_VECTOR(31 downto 0));
@@ -627,28 +489,28 @@ architecture struct of datapath is
          RegWriteD:   in STD_LOGIC;
          MemtoRegD:   in STD_LOGIC;
          MemWriteD:   in STD_LOGIC;
-         ALUControlD: in STD_LOGIC_VECTOR(2 downto 0);
-         BranchD:     in STD_LOGIC_VECTOR(W-1 downto 0);
+         ALUControlD: in STD_LOGIC_VECTOR(1 downto 0);
+         BranchD:     in STD_LOGIC_VECTOR(width-1 downto 0);
          ALUSrcD:     in STD_LOGIC;
          FlagWriteD:  in STD_LOGIC_VECTOR (1 downto 0);
          CondD:       in STD_LOGIC_VECTOR(3 downto 0);
          FlagsD:      in STD_LOGIC_VECTOR(3 downto 0);
-         rd1D:        in STD_LOGIC_VECTOR(W-1 downto 0);
-         rd2D:        in STD_LOGIC_VECTOR(W-1 downto 0);
+         rd1D:        in STD_LOGIC_VECTOR(width-1 downto 0);
+         rd2D:        in STD_LOGIC_VECTOR(width-1 downto 0);
          ExtImmD:     in STD_LOGIC_VECTOR(31 downto 0);
          WA3D:        in STD_LOGIC_VECTOR(3 downto 0);
          PCSrcE:      out STD_LOGIC;
          RegWriteE:   out STD_LOGIC;
          MemtoRegE:   out STD_LOGIC;
          MemWriteE:   out STD_LOGIC;
-         ALUControlE: out STD_LOGIC_VECTOR(2 downto 0);
-         BranchE:     out STD_LOGIC_VECTOR(W-1 downto 0);
+         ALUControlE: out STD_LOGIC_VECTOR(1 downto 0);
+         BranchE:     out STD_LOGIC_VECTOR(width-1 downto 0);
          ALUSrcE:     out STD_LOGIC; 
          FlagWriteE:  out STD_LOGIC_VECTOR(1 downto 0);
          CondE:       out STD_LOGIC_VECTOR(3 downto 0);
          FlagsE:      out STD_LOGIC_VECTOR(3 downto 0);
-         rd1E:        out STD_LOGIC_VECTOR(W-1 downto 0); 
-         rd2E:        out STD_LOGIC_VECTOR(W-1 downto 0);
+         rd1E:        out STD_LOGIC_VECTOR(width-1 downto 0); 
+         rd2E:        out STD_LOGIC_VECTOR(width-1 downto 0);
          ExtImmE:     out STD_LOGIC_VECTOR(31 downto 0);
          WA3E:        out STD_LOGIC_VECTOR(3 downto 0));
   end component;
@@ -658,15 +520,15 @@ architecture struct of datapath is
          RegWriteE:  in STD_LOGIC;
          MemtoRegE:  in STD_LOGIC;
          MemWriteE:  in STD_LOGIC;
-         ALUResultE: in STD_LOGIC_VECTOR(W-1 downto 0);
-         WriteDataE: in STD_LOGIC_VECTOR(W-1 downto 0);
+         ALUResultE: in STD_LOGIC_VECTOR(width-1 downto 0);
+         WriteDataE: in STD_LOGIC_VECTOR(width-1 downto 0);
          WA3E:       in STD_LOGIC_VECTOR(3 downto 0);
          PCSrcM:     out STD_LOGIC;
          RegWriteM:  out STD_LOGIC;
          MemtoRegM:  out STD_LOGIC;
          MemWriteM:  out STD_LOGIC;
-         ALUResultM: out STD_LOGIC_VECTOR(W-1 downto 0);
-         WriteDataM: out STD_LOGIC_VECTOR(W-1 downto 0);
+         ALUResultM: out STD_LOGIC_VECTOR(width-1 downto 0);
+         WriteDataM: out STD_LOGIC_VECTOR(width-1 downto 0);
          WA3M:       out STD_LOGIC_VECTOR(3 downto 0));
   end component;
   component regM generic(width: integer);
@@ -674,57 +536,57 @@ architecture struct of datapath is
          PCSrcM:    in STD_LOGIC;
          RegWriteM: in STD_LOGIC;
          MemtoRegM: in STD_LOGIC;
-         ReadDataM: in STD_LOGIC_VECTOR(W-1 downto 0);
-         ALUOutM:   in STD_LOGIC_VECTOR(W-1 downto 0);
+         ReadDataM: in STD_LOGIC_VECTOR(width-1 downto 0);
+         ALUOutM:   in STD_LOGIC_VECTOR(width-1 downto 0);
          WA3M:      in STD_LOGIC_VECTOR(3 downto 0);
          PCSrcW:    out STD_LOGIC;
          RegWriteW: out STD_LOGIC;
          MemtoRegW: out STD_LOGIC;
-         ReadDataW: out STD_LOGIC_VECTOR(W-1 downto 0);
-         ALUOutW:   out STD_LOGIC_VECTOR(W-1 downto 0);
+         ReadDataW: out STD_LOGIC_VECTOR(width-1 downto 0);
+         ALUOutW:   out STD_LOGIC_VECTOR(width-1 downto 0);
          WA3W:      out STD_LOGIC_VECTOR(3 downto 0));
   end component;
   signal PCNext, PCNext2, PCPlus4: STD_LOGIC_VECTOR(31 downto 0);
   signal ExtImm, Result:           STD_LOGIC_VECTOR(31 downto 0);
   signal SrcA, SrcAE, SrcBE, ReadDataWb:   STD_LOGIC_VECTOR(31 downto 0);
-  signal RA1, RA2:                 STD_LOGIC_VECTOR(3 downto 0);
+  signal AluResultE, WriteData, WriteDataM: STD_LOGIC_VECTOR(31 downto 0);
+  signal ALUOutM, ALUOutW: STD_LOGIC_VECTOR(31 downto 0);
+  signal RA1, RA2, WA3W, WA3M:                 STD_LOGIC_VECTOR(3 downto 0);
   signal PCSrcE, RegWriteE, MemtoRegE, MemWriteE, ALUSrcEx: STD_LOGIC;
-  signal MemtoRegWb: STD_LOGIC;
-  signal ALUControlEx: STD_LOGIC_VECTOR(2 downto 0);
+  signal PCSrcM, RegWriteM, MemtoRegM, MemWriteM: STD_LOGIC;
+  signal MemtoRegWb, PCSrcWb, RegWriteWb: STD_LOGIC;
+  signal ALUControlEx: STD_LOGIC_VECTOR(1 downto 0);
   signal BranchE, rd1E, rd2E, ExtImmE, WriteDataE: STD_LOGIC_VECTOR(31 downto 0);
   signal CondE, FlagsE, WA3E: STD_LOGIC_VECTOR(3 downto 0);
-  signal flagWriteE: STD_LOGIC_VECTOR(1 downto 0);
 begin
   -- Fetch Stage
   pcmux1: mux2 generic map(32)
-              port map(PCPlus4, Result, PCSrcW, PCNext);
-  pcmux2: mux2 generic map(32)
-              port map(PCNext, ALUResultE, BranchTakenE, PCNext2)
-  pcreg: flopr generic map(32) port map(clk, reset, PCNext2, PC);
+              port map(PCPlus4, Result, PCSrcWb, PCNext);
+  -- pcmux2: mux2 generic map(32)
+              -- port map(PCNext, ALUResultE, BranchTakenE, PCNext2);
+  pcreg: flopr generic map(32) port map(clk, reset, PCNext, PC);
   pcadd1: adder port map(PC, X"00000004", PCPlus4);
-  regFD: regF generic map(32) port map (clk, Instr, InstrD)
+  regFD: regF port map (clk, Instr, InstrD);
 
   -- Decode Stage
   ra1mux: mux2 generic map (4)
     port map(InstrD(19 downto 16), "1111", RegSrcD(0), RA1);
   ra2mux: mux2 generic map (4) port map(InstrD(3 downto 0), 
              InstrD(15 downto 12), RegSrcD(1), RA2);
-  rf: regfile port map(clk, RegWrite, RA1, RA2, WA3W, Result, 
+  rf: regfile port map(clk, RegWriteW, RA1, RA2, WA3W, Result, 
                       PCPlus4, SrcA, WriteData);
   ext: extend port map(InstrD(23 downto 0), ImmSrcD, ExtImm);
   regDE: regD generic map (32)
-    port map(clk, PCSrcD, RegWriteW, MemToRegW, MEMWRITETDB, ALUControlE, BRANCHTBD, ALUSrcE, FlagWriteD,
-             InstrD(31 downto 28), FLAGSTBD, SrcA, WriteData, ExtImm, InstrD(15 downto 12), PCSrcE, RegWriteE, 
+    port map(clk, PCSrcW, RegWriteW, MemToRegW, MemWriteD, ALUControlE, "00000000000000000000000000000000", ALUSrcE, FlagWriteD,
+             InstrD(31 downto 28), "0000", SrcA, WriteData, ExtImm, InstrD(15 downto 12), PCSrcE, RegWriteE, 
              MemtoRegE, MemWriteE, ALUControlEx, BranchE, ALUSrcEx, FlagWriteE, CondE, FlagsE, rd1E,
              rd2E, ExtImmE, WA3E);
 
   -- Execute Stage
   -- muxSrcA: mux4 generic map(32)
-  --   port map(rd1E, Result, ALUOutM, "00000000000000000000000000000000", ForwardAE(1), 
-  --            ForwardAE(0), SrcAE);
+  --   port map(rd1E, Result, ALUOutM, "00000000000000000000000000000000", ForwardAE, SrcAE);
   -- muxSrcB: mux4 generic map(32)
-  --   port map(rd2E, Result, ALUOutM, "00000000000000000000000000000000", ForwardBE(1),
-  --            ForwardBE(0), WriteDataE);
+  --   port map(rd2E, Result, ALUOutM, "00000000000000000000000000000000", ForwardBE, WriteDataE);
   srcbmux: mux2 generic map(32) 
     port map(rd2E, ExtImmE, ALUSrcE, SrcBE);
   i_alu: alu port map(rd1E, SrcBE, ALUControlE, ALUResultE, ALUFlags);
@@ -734,7 +596,7 @@ begin
 
   -- Memory Stage
   regMW: regM generic map (32)
-    port map(clk, PCSrcM, RegWriteM, ReadDataW, ALUOutM, WA3M, PCSrcW, RegWriteW, MemtoRegWb,
+    port map(clk, PCSrcM, RegWriteM, MemtoRegM, ReadDataW, ALUOutM, WA3M, PCSrcWb, RegWriteWb, MemtoRegWb,
              ReadDataWb, ALUOutW, WA3W);
 
   -- Write Back Stage
@@ -772,6 +634,146 @@ begin
     end if;
   end process;
 end;
+
+library IEEE; use IEEE.STD_LOGIC_1164.all;
+entity regF is 
+  port(clk:    in STD_LOGIC;
+       instrF: in STD_LOGIC_VECTOR(31 downto 0);
+       instrD: out STD_LOGIC_VECTOR(31 downto 0));
+end regF;
+
+architecture behave of regF is
+begin
+  process(clk)
+  begin
+    if(clk'event and clk = '1') then
+      instrD <= instrF;
+    end if;
+  end process;
+end behave;
+
+library IEEE; use IEEE.STD_LOGIC_1164.all;
+entity regD is generic(width : integer);
+  port(clk:         in STD_LOGIC;
+       PCSrcD:      in STD_LOGIC;
+       RegWriteD:   in STD_LOGIC;
+       MemtoRegD:   in STD_LOGIC;
+       MemWriteD:   in STD_LOGIC;
+       ALUControlD: in STD_LOGIC_VECTOR(1 downto 0);
+       BranchD:     in STD_LOGIC_VECTOR(width-1 downto 0);
+       ALUSrcD:     in STD_LOGIC;
+       FlagWriteD:  in STD_LOGIC_VECTOR (1 downto 0);
+       CondD:       in STD_LOGIC_VECTOR(3 downto 0);
+       FlagsD:      in STD_LOGIC_VECTOR(3 downto 0);
+       rd1D:        in STD_LOGIC_VECTOR(width-1 downto 0);
+       rd2D:        in STD_LOGIC_VECTOR(width-1 downto 0);
+       ExtImmD:     in STD_LOGIC_VECTOR(31 downto 0);
+       WA3D:        in STD_LOGIC_VECTOR(3 downto 0);
+       PCSrcE:      out STD_LOGIC;
+       RegWriteE:   out STD_LOGIC;
+       MemtoRegE:   out STD_LOGIC;
+       MemWriteE:   out STD_LOGIC;
+       ALUControlE: out STD_LOGIC_VECTOR(1 downto 0);
+       BranchE:     out STD_LOGIC_VECTOR(width-1 downto 0);
+       ALUSrcE:     out STD_LOGIC; 
+       FlagWriteE:  out STD_LOGIC_VECTOR(1 downto 0);
+       CondE:       out STD_LOGIC_VECTOR(3 downto 0);
+       FlagsE:      out STD_LOGIC_VECTOR(3 downto 0);
+       rd1E:        out STD_LOGIC_VECTOR(width-1 downto 0); 
+       rd2E:        out STD_LOGIC_VECTOR(width-1 downto 0);
+       ExtImmE:     out STD_LOGIC_VECTOR(31 downto 0);
+       WA3E:        out STD_LOGIC_VECTOR(3 downto 0));
+end regD;
+
+architecture behave of regD is
+begin
+  process(clk)
+  begin
+    if(clk'event and clk = '1') then
+      PCSrcE <= PCSrcD;
+      RegWriteE <= RegWriteD;
+      MemtoRegE <= MemtoRegD;
+      MemWriteE <= MemWriteD;
+      ALUControlE <= ALUControlD;
+      BranchE <= BranchD;
+      ALUSrcE <= ALUSrcD;
+      FlagWriteE <= FlagWriteD;
+      CondE <= CondD;
+      FlagsE <= FlagsD;
+      rd1E <= rd1D;
+      rd2E <= rd2D;
+      ExtImmE <= ExtImmD;
+      WA3E <= WA3D;
+    end if;
+  end process;
+end behave;
+
+library IEEE; use IEEE.STD_LOGIC_1164.all;
+entity regE is generic(width : integer);
+  port(clk:        in STD_LOGIC;
+       PCSrcE:     in STD_LOGIC;
+       RegWriteE:  in STD_LOGIC;
+       MemtoRegE:  in STD_LOGIC;
+       MemWriteE:  in STD_LOGIC;
+       ALUResultE: in STD_LOGIC_VECTOR(width-1 downto 0);
+       WriteDataE: in STD_LOGIC_VECTOR(width-1 downto 0);
+       WA3E:       in STD_LOGIC_VECTOR(3 downto 0);
+       PCSrcM:     out STD_LOGIC;
+       RegWriteM:  out STD_LOGIC;
+       MemtoRegM:  out STD_LOGIC;
+       MemWriteM:  out STD_LOGIC;
+       ALUResultM: out STD_LOGIC_VECTOR(width-1 downto 0);
+       WriteDataM: out STD_LOGIC_VECTOR(width-1 downto 0);
+       WA3M:       out STD_LOGIC_VECTOR(3 downto 0));
+end regE;
+
+architecture behave of regE is
+begin
+  process(clk)
+  begin
+    if(clk'event and clk = '1') then
+      PCSrcM <= PCSrcE;
+      RegWriteM <= RegWriteE;
+      MemtoRegM <= MemtoRegE;
+      MemWriteM <= MemWriteE;
+      ALUResultM <= ALUResultE;
+      WriteDataM <= WriteDataE;
+      WA3M <= WA3E;
+    end if;
+  end process;
+end behave;
+
+library IEEE; use IEEE.STD_LOGIC_1164.all;
+entity regM is generic(width : integer);
+  port(clk:       in STD_LOGIC;
+       PCSrcM:    in STD_LOGIC;
+       RegWriteM: in STD_LOGIC;
+       MemtoRegM: in STD_LOGIC;
+       ReadDataM: in STD_LOGIC_VECTOR(width-1 downto 0);
+       ALUOutM:   in STD_LOGIC_VECTOR(width-1 downto 0);
+       WA3M:      in STD_LOGIC_VECTOR(3 downto 0);
+       PCSrcW:    out STD_LOGIC;
+       RegWriteW: out STD_LOGIC;
+       MemtoRegW: out STD_LOGIC;
+       ReadDataW: out STD_LOGIC_VECTOR(width-1 downto 0);
+       ALUOutW:   out STD_LOGIC_VECTOR(width-1 downto 0);
+       WA3W:      out STD_LOGIC_VECTOR(3 downto 0));
+end regM;
+
+architecture behave of regM is
+begin
+  process(clk)
+  begin
+    if(clk'event and clk = '1') then
+      PCSrcW <= PCSrcM;
+      RegWriteW <= RegWriteM;
+      MemtoRegW <= MemtoRegM;
+      ReadDataW <= ReadDataM;
+      ALUOutW <= ALUOutM;
+      WA3W <= WA3M;
+    end if;
+  end process;
+end behave;
 
 library IEEE; use IEEE.STD_LOGIC_1164.all; 
 use IEEE.NUMERIC_STD_UNSIGNED.all;
@@ -858,25 +860,21 @@ end;
 
 library IEEE; use IEEE.STD_LOGIC_1164.all;
 entity mux4 is
-	generic(W : integer);
+	generic(width: integer);
    port (
-		D0, D1, D2, D3  : in std_logic_vector(W-1 downto 0);
-    S0, S1          : in std_logic;
-		Y               : out std_logic_vector(W-1 downto 0)
+		D0, D1, D2, D3  : in std_logic_vector(width-1 downto 0);
+		S: in std_logic_vector(1 downto 0);
+		Y               : out std_logic_vector(width-1 downto 0)
 	);
 end mux4;
 
 architecture behave of mux4 is
 begin
-  if (S0 ='0' and S1 = '0') then
-    Y <= D0;
-  elsif (S0 ='0' and S1 = '1') then
-    Y <= D1;
-  elsif (S0 ='1' and S1 = '0') then
-    Y <= D2;
-  else
-    Y <= D3;
-  end if;
+  with S select
+    Y <= D0 when "00",
+       D1 when "01",
+       D2 when "10",
+       D3 when others;
 end behave;
 
 library IEEE; use IEEE.STD_LOGIC_1164.all; 
@@ -913,4 +911,3 @@ begin
              (a(31) xor sum(31));
   ALUFlags    <= (neg, zero, carry, overflow);
 end;
-
