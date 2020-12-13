@@ -205,14 +205,9 @@ architecture struct of arm is
          ALUControlE:        out STD_LOGIC_VECTOR(1 downto 0);
          MemWriteM:          out STD_LOGIC;
          MemtoRegW:          out STD_LOGIC;
-         BranchTakenE:       out STD_LOGIC;
          FlagWriteD:         out STD_LOGIC_VECTOR(1 downto 0);
          FlagWriteE:         in STD_LOGIC_VECTOR(1 downto 0);
-         PCSrcW:             out STD_LOGIC;
-         BranchD:            out STD_LOGIC;
-         BranchE:            in STD_LOGIC;
-         Flags:              out STD_LOGIC_VECTOR(3 downto 0);
-         FlagsE:             in STD_LOGIC_VECTOR(3 downto 0));
+         PCSrcW:             out STD_LOGIC);
   end component;
   component datapath
     port(clk, reset:        in  STD_LOGIC;
@@ -224,178 +219,29 @@ architecture struct of arm is
          MemtoRegW:          in  STD_LOGIC;
          PCSrcW:             in  STD_LOGIC;
 		 MemWriteD:          in STD_LOGIC;
-         BranchTakenE:       in STD_LOGIC;
-         ForwardAE:         in STD_LOGIC_VECTOR(1 downto 0);
-         ForwardBE:         in STD_LOGIC_VECTOR(1 downto 0);
-         StallF:            in STD_LOGIC;
-         StallD:            in STD_LOGIC;
-         FlushE:            in STD_LOGIC;
-         FlushD:            in STD_LOGIC;
-         BranchD:           in STD_LOGIC;
-         BranchE:           out STD_LOGIC;
          FlagWriteD:         in STD_LOGIC_VECTOR(1 downto 0);
          FlagWriteE:         out STD_LOGIC_VECTOR(1 downto 0);
          ALUFlags:          out STD_LOGIC_VECTOR(3 downto 0);
-         MemtoRegE:         out STD_LOGIC;
-         RegWriteM:         out STD_LOGIC;
-         PCSrcD:            out STD_LOGIC;
-         PCSrcE:            out STD_LOGIC;
-		 RA1D:              out STD_LOGIC_VECTOR(3 downto 0);
-		 RA2D:              out STD_LOGIC_VECTOR(3 downto 0);
-         RA1E:              out STD_LOGIC_VECTOR(3 downto 0);
-         RA2E:              out STD_LOGIC_VECTOR(3 downto 0);
-		 WA3E:              out STD_LOGIC_VECTOR(3 downto 0);
-         WA3M:              out STD_LOGIC_VECTOR(3 downto 0);
-         WA3W:              out STD_LOGIC_VECTOR(3 downto 0);
-		 PCSrcWb:           out STD_LOGIC;
          PC:                buffer STD_LOGIC_VECTOR(31 downto 0);
          Instr:             in  STD_LOGIC_VECTOR(31 downto 0);
          InstrD:            out STD_LOGIC_VECTOR(31 downto 0);
          ALUResultW, WriteDataW: buffer STD_LOGIC_VECTOR(31 downto 0);
-         ReadDataW:          in  STD_LOGIC_VECTOR(31 downto 0);
-         Flags:              in STD_LOGIC_VECTOR(3 downto 0);
-         FlagsE:             out STD_LOGIC_VECTOR(3 downto 0));
+         ReadDataW:          in  STD_LOGIC_VECTOR(31 downto 0));
   end component;
-  component hazard
-    port(RegWriteM:         in STD_LOGIC;
-         RegWriteW:         in STD_LOGIC;
-         MemtoRegE:         in STD_LOGIC;
-		 RA1D:              in STD_LOGIC_VECTOR(3 downto 0);
-		 RA2D:              in STD_LOGIC_VECTOR(3 downto 0);
-         RA1E:              in STD_LOGIC_VECTOR(3 downto 0);
-         RA2E:              in STD_LOGIC_VECTOR(3 downto 0);
-		 WA3E:              in STD_LOGIC_VECTOR(3 downto 0);
-         WA3M:              in STD_LOGIC_VECTOR(3 downto 0);
-         WA3W:              in STD_LOGIC_VECTOR(3 downto 0);
-         PCSrcD:            in STD_LOGIC;
-         PCSrcE:            in STD_LOGIC;
-         PCSrcM:            in STD_LOGIC;
-		 PCSrcWb:           in STD_LOGIC;
-         BranchTakenE:      in STD_LOGIC;
-         ForwardAE:         out STD_LOGIC_VECTOR(1 downto 0);
-         ForwardBE:         out STD_LOGIC_VECTOR(1 downto 0);
-         StallF:            out STD_LOGIC;
-         StallD:            out STD_LOGIC;
-         FlushE:            out STD_LOGIC;
-         FlushD:            out STD_LOGIC);
-  end component;
-  signal RegWriteW, RegWriteM, ALUSrc, MemtoRegW, PCSrcW: STD_LOGIC;
-  signal PCSrcD, PCSrcE, PCSrcM, PCSrcWb, BranchTakenE, MemtoRegE: STD_LOGIC;
-  signal StallF, StallD, FlushE, FlushD, BranchD, BranchE: STD_LOGIC;
+  signal RegWrite, ALUSrc, MemtoReg, PCSrc: STD_LOGIC;
   signal RegSrc, ImmSrc, ALUControl, FlagWrite1, FlagWrite2: STD_LOGIC_VECTOR(1 downto 0);
-  signal ForwardAE, ForwardBE: STD_LOGIC_VECTOR(1 downto 0);
-  signal RA1D, RA2D, RA1E, RA2E, WA3E, WA3M, WA3W: STD_LOGIC_VECTOR(3 downto 0);
-  signal ALUFlags, Flags, FlagsE: STD_LOGIC_VECTOR(3 downto 0);
+  signal ALUFlags: STD_LOGIC_VECTOR(3 downto 0);
   signal instrD: STD_LOGIC_VECTOR(31 downto 0);
 begin
   cont: controller port map(clk, reset, InstrD(31 downto 12), 
-                            ALUFlags, RegSrc, RegWriteW, ImmSrc, 
-                            ALUSrc, ALUControl, MemWrite, MemtoRegW,
-                            BranchTakenE, FlagWrite1, FlagWrite2, PCSrcW,
-                            BranchD, BranchE, Flags, FlagsE);
-  dp: datapath port map(clk, reset, RegSrc, RegWriteW, ImmSrc, 
-                        ALUSrc, ALUControl, MemtoRegW, PCSrcW, MemWrite,
-                        BranchTakenE, ForwardAE, ForwardBE, StallF, StallD,
-                        FlushE, FlushD, BranchD, BranchE, FlagWrite1, FlagWrite2, ALUFlags, 
-                        MemtoRegE, RegWriteM, PCSrcD, PCSrcE, RA1D, RA2D, RA1E, RA2E, WA3E, WA3M, WA3W,
-						PCSrcWb, PC, Instr, InstrD, ALUResult, WriteData, ReadData, Flags, FlagsE);
-  hz: hazard port map(RegWriteM, RegWriteW, MemtoRegE, RA1D, RA1E, RA1E, RA2E, WA3E, WA3M, WA3W,
-                      PCSrcD, PCSrcE, PCSrcM, PCSrcWb, BranchTakenE, ForwardAE, ForwardBE,
-                      StallF, StallD, FlushE, FlushD);
+                            ALUFlags, RegSrc, RegWrite, ImmSrc, 
+                            ALUSrc, ALUControl, MemWrite, 
+                            MemtoReg, FlagWrite1, FlagWrite2, PCSrc);
+  dp: datapath port map(clk, reset, RegSrc, RegWrite, ImmSrc, 
+                        ALUSrc, ALUControl, MemtoReg, PCSrc, MemWrite,
+                        FlagWrite1, FlagWrite2, ALUFlags, PC, Instr, 
+                        InstrD, ALUResult, WriteData, ReadData);
 end;
-
-library IEEE; use IEEE.STD_LOGIC_1164.all;
-entity hazard is
-  port(RegWriteM:         in STD_LOGIC;
-       RegWriteW:         in STD_LOGIC;
-       MemtoRegE:         in STD_LOGIC;
-	   RA1D:              in STD_LOGIC_VECTOR(3 downto 0);
-       RA2D:              in STD_LOGIC_VECTOR(3 downto 0);
-       RA1E:              in STD_LOGIC_VECTOR(3 downto 0);
-       RA2E:              in STD_LOGIC_VECTOR(3 downto 0);
-	   WA3E:              in STD_LOGIC_VECTOR(3 downto 0);
-       WA3M:              in STD_LOGIC_VECTOR(3 downto 0);
-       WA3W:              in STD_LOGIC_VECTOR(3 downto 0);
-       PCSrcD:            in STD_LOGIC;
-       PCSrcE:            in STD_LOGIC;
-       PCSrcM:            in STD_LOGIC;
-	   PCSrcWb:           in STD_LOGIC;
-       BranchTakenE:      in STD_LOGIC;
-       ForwardAE:         out STD_LOGIC_VECTOR(1 downto 0);
-       ForwardBE:         out STD_LOGIC_VECTOR(1 downto 0);
-       StallF:            out STD_LOGIC;
-       StallD:            out STD_LOGIC;
-       FlushE:            out STD_LOGIC;
-       FlushD:            out STD_LOGIC);
-end;
-
-architecture behave of hazard is
-  signal Match_1E_M, Match_1E_W: STD_LOGIC;
-  signal Match_2E_M, Match_2E_W: STD_LOGIC;
-  signal Match_12D_E, Eq1, Eq2, LDRstall: STD_LOGIC;
-  signal PCWrPendingF: STD_LOGIC;
-begin
-  process(RA1E, RA2E, WA3M, WA3W) begin
-    if (RA1E = WA3M) then
-      Match_1E_M <= '1';
-    else
-      Match_1E_M <= '0';
-    end if;
-    if (RA1E = WA3W) then
-      Match_1E_W <= '1';
-    else
-      Match_1E_W <= '0';
-    end if;
-    if (RA2E = WA3M) then
-      Match_2E_M <= '1';
-    else
-      Match_2E_M <= '0';
-    end if;
-    if (RA2E = WA3W) then
-      Match_2E_W <= '1';
-    else
-      Match_2E_W <= '0';
-    end if;
-  end process;
-
-  process(RegWriteM, RegWriteW, Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W) begin
-    if (Match_1E_M and RegWriteM) then
-      ForwardAE <= "10";
-    elsif (Match_1E_W and RegWriteW) then
-      ForwardAE <= "01";
-    else
-      ForwardAE <= "00";
-    end if;
-    if (Match_2E_M and RegWriteM) then
-      ForwardBE <= "10";
-    elsif (Match_2E_W and RegWriteW) then
-      ForwardBE <= "01";
-    else
-      ForwardBE <= "00";
-    end if;
-  end process;
-
-  process (RA1D, RA2D, WA3E, MemtoRegE, PCSrcD, PCSrcE, PCSrcM, BranchTakenE,
-		   Eq1, Eq2, Match_12D_E, LDRstall, PCWrPendingF, PCSrcWb) begin
-    if (RA1D = WA3E) then
-      Eq1 <= '1';
-    else 
-      Eq1 <= '0';
-    end if;
-    if (RA2D = WA3E) then
-      Eq2 <= '1';
-    else  
-      Eq2 <= '0';
-    end if;
-    Match_12D_E <= Eq1 or Eq2;
-    LDRstall <= Match_12D_E and MemtoRegE;
-    PCWrPendingF <= PCSrcD or PCSrcE or PCSrcM;
-    StallD <= LDRstall;
-    StallF <= LDRstall or PCWrPendingF;
-    FlushE <= LDRstall or BranchTakenE;
-    FlushD <= PCWrPendingF or PCSrcWb or BranchTakenE;
-  end process;
-end behave;
 
 library IEEE; use IEEE.STD_LOGIC_1164.all;
 entity controller is -- single cycle control decoder
@@ -409,14 +255,9 @@ entity controller is -- single cycle control decoder
        ALUControlE:        out STD_LOGIC_VECTOR(1 downto 0);
        MemWriteM:          out STD_LOGIC;
        MemtoRegW:          out STD_LOGIC;
-       BranchTakenE:       out STD_LOGIC;
        FlagWriteD:         out STD_LOGIC_VECTOR(1 downto 0);
        FlagWriteE:         in STD_LOGIC_VECTOR(1 downto 0);
-       PCSrcW:             out STD_LOGIC;
-       BranchD:            out STD_LOGIC;
-       BranchE:            in STD_LOGIC;
-       Flags:              out STD_LOGIC_VECTOR(3 downto 0);
-       FlagsE:             in STD_LOGIC_VECTOR(3 downto 0));
+       PCSrcW:             out STD_LOGIC);
 end;
 
 architecture struct of controller is
@@ -428,8 +269,7 @@ architecture struct of controller is
          PCS, RegW, MemW:  out STD_LOGIC;
          MemtoReg, ALUSrc: out STD_LOGIC;
          ImmSrc, RegSrc:   out STD_LOGIC_VECTOR(1 downto 0);
-         ALUControl:       out STD_LOGIC_VECTOR(1 downto 0);
-         BranchD:          out STD_LOGIC);
+         ALUControl:       out STD_LOGIC_VECTOR(1 downto 0));
   end component;
   component condlogic
     port(clk, reset:       in  STD_LOGIC;
@@ -437,12 +277,8 @@ architecture struct of controller is
          ALUFlags:         in  STD_LOGIC_VECTOR(3 downto 0);
          FlagW:            in  STD_LOGIC_VECTOR(1 downto 0);
          PCS, RegW, MemW:  in  STD_LOGIC;
-         BranchE:          in STD_LOGIC;
          PCSrc, RegWrite:  out STD_LOGIC;
-         MemWrite:         out STD_LOGIC;
-         BranchTakenE:     out STD_LOGIC;
-         Flags:            out STD_LOGIC_VECTOR(3 downto 0);
-         FlagsE:           in STD_LOGIC_VECTOR(3 downto 0));
+         MemWrite:         out STD_LOGIC);
   end component;
   signal FlagW: STD_LOGIC_VECTOR(1 downto 0);
   signal PCS, RegW, MemW: STD_LOGIC;
@@ -450,11 +286,10 @@ begin
   dec: decoder port map(InstrD(27 downto 26), InstrD(25 downto 20),
                        InstrD(15 downto 12), FlagWriteD, PCS, 
                        RegW, MemW, MemtoRegW, ALUSrcE, ImmSrcD, 
-                       RegSrcD, ALUControlE, BranchD);
+                       RegSrcD, ALUControlE);
   cl: condlogic port map(clk, reset, InstrD(31 downto 28), 
                          ALUFlags, FlagWriteE, PCS, RegW, MemW,
-                         BranchE, PCSrcW, RegWriteW, MemWriteM,
-                         BranchTakenE, Flags, FlagsE); 
+                         PCSrcW, RegWriteW, MemWriteM); 
 end;
 
 library IEEE; use IEEE.STD_LOGIC_1164.all;
@@ -466,8 +301,7 @@ entity decoder is -- main control decoder
        PCS, RegW, MemW:  out STD_LOGIC;
        MemtoReg, ALUSrc: out STD_LOGIC;
        ImmSrc, RegSrc:   out STD_LOGIC_VECTOR(1 downto 0);
-       ALUControl:       out STD_LOGIC_VECTOR(1 downto 0);
-       BranchD:          out STD_LOGIC);
+       ALUControl:       out STD_LOGIC_VECTOR(1 downto 0));
 end;
 
 architecture behave of decoder is
@@ -508,7 +342,6 @@ begin
   end process;
   
   PCS <= ((and Rd) and RegW) or Branch;
-  BranchD <= Branch;
 end;
 
 library IEEE; use IEEE.STD_LOGIC_1164.all;
@@ -518,12 +351,8 @@ entity condlogic is -- Conditional logic
        ALUFlags:         in  STD_LOGIC_VECTOR(3 downto 0);
        FlagW:            in  STD_LOGIC_VECTOR(1 downto 0);
        PCS, RegW, MemW:  in  STD_LOGIC;
-       BranchE:          in STD_LOGIC;
        PCSrc, RegWrite:  out STD_LOGIC;
-       MemWrite:         out STD_LOGIC;
-       BranchTakenE:     out STD_LOGIC;
-       Flags:            out STD_LOGIC_VECTOR(3 downto 0);
-       FlagsE:           in STD_LOGIC_VECTOR(3 downto 0));
+       MemWrite:         out STD_LOGIC);
 end;
 
 architecture behave of condlogic is
@@ -538,6 +367,7 @@ architecture behave of condlogic is
          q:          out STD_LOGIC_VECTOR(width-1 downto 0));
   end component;
   signal FlagWrite: STD_LOGIC_VECTOR(1 downto 0);
+  signal Flags:     STD_LOGIC_VECTOR(3 downto 0);
   signal CondEx:    STD_LOGIC;
 begin
   flagreg1: flopenr generic map(2)
@@ -546,13 +376,12 @@ begin
   flagreg0: flopenr generic map(2)
     port map(clk, reset, FlagWrite(0), 
              ALUFlags(1 downto 0), Flags(1 downto 0));
-  cc: condcheck port map(Cond, FlagsE, CondEx);
+  cc: condcheck port map(Cond, Flags, CondEx);
   
   FlagWrite <= FlagW and (CondEx, CondEx); 
   RegWrite  <= RegW  and CondEx;
   MemWrite  <= MemW  and CondEx;
   PCSrc     <= PCS   and CondEx;
-  BranchTakenE <= BranchE and CondEx;
 end;
 
 library IEEE; use IEEE.STD_LOGIC_1164.all;
@@ -593,45 +422,22 @@ end;
 library IEEE; use IEEE.STD_LOGIC_1164.all; 
 entity datapath is  
   port(clk, reset:        in  STD_LOGIC;
-	   RegSrcD:            in  STD_LOGIC_VECTOR(1 downto 0);
-	    RegWriteW:          in  STD_LOGIC;
-	    ImmSrcD:            in  STD_LOGIC_VECTOR(1 downto 0);
-	    ALUSrcE:            in  STD_LOGIC;
-	    ALUControlE:        in  STD_LOGIC_VECTOR(1 downto 0);
-	    MemtoRegW:          in  STD_LOGIC;
-	    PCSrcW:             in  STD_LOGIC;
-	    MemWriteD:          in STD_LOGIC;
-	    BranchTakenE:       in STD_LOGIC;
-	    ForwardAE:         in STD_LOGIC_VECTOR(1 downto 0);
-	    ForwardBE:         in STD_LOGIC_VECTOR(1 downto 0);
-	    StallF:            in STD_LOGIC;
-	    StallD:            in STD_LOGIC;
-	    FlushE:            in STD_LOGIC;
-	    FlushD:            in STD_LOGIC;
-	    BranchD:           in STD_LOGIC;
-	    BranchE:           out STD_LOGIC;
-	    FlagWriteD:         in STD_LOGIC_VECTOR(1 downto 0);
-	    FlagWriteE:         out STD_LOGIC_VECTOR(1 downto 0);
-	    ALUFlags:          out STD_LOGIC_VECTOR(3 downto 0);
-	    MemtoRegE:         out STD_LOGIC;
-	    RegWriteM:         out STD_LOGIC;
-	    PCSrcD:            out STD_LOGIC;
-	    PCSrcE:            out STD_LOGIC;
-	    RA1D:              out STD_LOGIC_VECTOR(3 downto 0);
-	    RA2D:              out STD_LOGIC_VECTOR(3 downto 0);
-	    RA1E:              out STD_LOGIC_VECTOR(3 downto 0);
-	    RA2E:              out STD_LOGIC_VECTOR(3 downto 0);
-	    WA3E:              out STD_LOGIC_VECTOR(3 downto 0);
-	    WA3M:              out STD_LOGIC_VECTOR(3 downto 0);
-	    WA3W:              out STD_LOGIC_VECTOR(3 downto 0);
-		PCSrcWb:           out STD_LOGIC;
-	    PC:                buffer STD_LOGIC_VECTOR(31 downto 0);
-	    Instr:             in  STD_LOGIC_VECTOR(31 downto 0);
-	    InstrD:            out STD_LOGIC_VECTOR(31 downto 0);
-	    ALUResultW, WriteDataW: buffer STD_LOGIC_VECTOR(31 downto 0);
-	    ReadDataW:          in  STD_LOGIC_VECTOR(31 downto 0);
-	    Flags:              in STD_LOGIC_VECTOR(3 downto 0);
-	    FlagsE:             out STD_LOGIC_VECTOR(3 downto 0));
+       RegSrcD:            in  STD_LOGIC_VECTOR(1 downto 0);
+       RegWriteW:          in  STD_LOGIC;
+       ImmSrcD:            in  STD_LOGIC_VECTOR(1 downto 0);
+       ALUSrcE:            in  STD_LOGIC;
+       ALUControlE:        in  STD_LOGIC_VECTOR(1 downto 0);
+       MemtoRegW:          in  STD_LOGIC;
+       PCSrcW:             in  STD_LOGIC;
+	   MemWriteD:          in STD_LOGIC;
+       FlagWriteD:         in STD_LOGIC_VECTOR(1 downto 0);
+       FlagWriteE:         out STD_LOGIC_VECTOR(1 downto 0);
+       ALUFlags:          out STD_LOGIC_VECTOR(3 downto 0);
+       PC:                buffer STD_LOGIC_VECTOR(31 downto 0);
+       Instr:             in  STD_LOGIC_VECTOR(31 downto 0);
+       InstrD:            out STD_LOGIC_VECTOR(31 downto 0);
+       ALUResultW, WriteDataW: buffer STD_LOGIC_VECTOR(31 downto 0);
+       ReadDataW:          in  STD_LOGIC_VECTOR(31 downto 0));
 end;
 
 architecture struct of datapath is
@@ -657,8 +463,8 @@ architecture struct of datapath is
          ImmSrc: in  STD_LOGIC_VECTOR(1 downto 0);
          ExtImm: out STD_LOGIC_VECTOR(31 downto 0));
   end component;
-  component flopenr generic(width: integer);
-    port(clk, reset, en: in  STD_LOGIC;
+  component flopr generic(width: integer);
+    port(clk, reset: in  STD_LOGIC;
          d:          in  STD_LOGIC_VECTOR(width-1 downto 0);
          q:          out STD_LOGIC_VECTOR(width-1 downto 0));
   end component;
@@ -673,18 +479,18 @@ architecture struct of datapath is
          Y               : out std_logic_vector(width-1 downto 0));
   end component;
   component regF
-    port(clk, reset, en:    in STD_LOGIC;
+    port(clk:    in STD_LOGIC;
          instrF: in STD_LOGIC_VECTOR(31 downto 0);
          instrD: out STD_LOGIC_VECTOR(31 downto 0));
   end component;
   component regD generic(width: integer);
-    port(clk, reset:         in STD_LOGIC;
+    port(clk:         in STD_LOGIC;
          PCSrcD:      in STD_LOGIC;
          RegWriteD:   in STD_LOGIC;
          MemtoRegD:   in STD_LOGIC;
          MemWriteD:   in STD_LOGIC;
          ALUControlD: in STD_LOGIC_VECTOR(1 downto 0);
-         BranchD:     in STD_LOGIC;
+         BranchD:     in STD_LOGIC_VECTOR(width-1 downto 0);
          ALUSrcD:     in STD_LOGIC;
          FlagWriteD:  in STD_LOGIC_VECTOR (1 downto 0);
          CondD:       in STD_LOGIC_VECTOR(3 downto 0);
@@ -693,14 +499,12 @@ architecture struct of datapath is
          rd2D:        in STD_LOGIC_VECTOR(width-1 downto 0);
          ExtImmD:     in STD_LOGIC_VECTOR(31 downto 0);
          WA3D:        in STD_LOGIC_VECTOR(3 downto 0);
-		 RA1D:		  in STD_LOGIC_VECTOR(3 downto 0);
-		 RA2D:		  in STD_LOGIC_VECTOR(3 downto 0);
          PCSrcE:      out STD_LOGIC;
          RegWriteE:   out STD_LOGIC;
          MemtoRegE:   out STD_LOGIC;
          MemWriteE:   out STD_LOGIC;
          ALUControlE: out STD_LOGIC_VECTOR(1 downto 0);
-         BranchE:     out STD_LOGIC;
+         BranchE:     out STD_LOGIC_VECTOR(width-1 downto 0);
          ALUSrcE:     out STD_LOGIC; 
          FlagWriteE:  out STD_LOGIC_VECTOR(1 downto 0);
          CondE:       out STD_LOGIC_VECTOR(3 downto 0);
@@ -708,9 +512,7 @@ architecture struct of datapath is
          rd1E:        out STD_LOGIC_VECTOR(width-1 downto 0); 
          rd2E:        out STD_LOGIC_VECTOR(width-1 downto 0);
          ExtImmE:     out STD_LOGIC_VECTOR(31 downto 0);
-         WA3E:        out STD_LOGIC_VECTOR(3 downto 0);
-		 RA1E:		  out STD_LOGIC_VECTOR(3 downto 0);
-		 RA2E:		  out STD_LOGIC_VECTOR(3 downto 0));
+         WA3E:        out STD_LOGIC_VECTOR(3 downto 0));
   end component;
   component regE generic(width: integer);
     port(clk:        in STD_LOGIC;
@@ -749,45 +551,45 @@ architecture struct of datapath is
   signal SrcA, SrcAE, SrcBE, ReadDataWb:   STD_LOGIC_VECTOR(31 downto 0);
   signal AluResultE, WriteData, WriteDataM: STD_LOGIC_VECTOR(31 downto 0);
   signal ALUOutM, ALUOutW: STD_LOGIC_VECTOR(31 downto 0);
-  signal RegWriteE, MemWriteE, ALUSrcEx: STD_LOGIC;
-  signal PCSrcM, MemtoRegM, MemWriteM: STD_LOGIC;
-  signal MemtoRegWb, RegWriteWb: STD_LOGIC;
+  signal RA1, RA2, WA3W, WA3M:                 STD_LOGIC_VECTOR(3 downto 0);
+  signal PCSrcE, RegWriteE, MemtoRegE, MemWriteE, ALUSrcEx: STD_LOGIC;
+  signal PCSrcM, RegWriteM, MemtoRegM, MemWriteM: STD_LOGIC;
+  signal MemtoRegWb, PCSrcWb, RegWriteWb: STD_LOGIC;
   signal ALUControlEx: STD_LOGIC_VECTOR(1 downto 0);
-  signal rd1E, rd2E, ExtImmE, WriteDataE: STD_LOGIC_VECTOR(31 downto 0);
-  signal CondE: STD_LOGIC_VECTOR(3 downto 0);
+  signal BranchE, rd1E, rd2E, ExtImmE, WriteDataE: STD_LOGIC_VECTOR(31 downto 0);
+  signal CondE, FlagsE, WA3E: STD_LOGIC_VECTOR(3 downto 0);
 begin
   -- Fetch Stage
   pcmux1: mux2 generic map(32)
               port map(PCPlus4, Result, PCSrcWb, PCNext);
-  pcmux2: mux2 generic map(32)
-              port map(PCNext, ALUResultE, BranchTakenE, PCNext2);
-  pcreg: flopenr generic map(32) port map(clk, reset, StallF, PCNext2, PC);
+  -- pcmux2: mux2 generic map(32)
+              -- port map(PCNext, ALUResultE, BranchTakenE, PCNext2);
+  pcreg: flopr generic map(32) port map(clk, reset, PCNext, PC);
   pcadd1: adder port map(PC, X"00000004", PCPlus4);
-  regFD: regF port map (clk, FlushD, StallD, Instr, InstrD);
+  regFD: regF port map (clk, Instr, InstrD);
 
   -- Decode Stage
   ra1mux: mux2 generic map (4)
-    port map(InstrD(19 downto 16), "1111", RegSrcD(0), RA1D);
+    port map(InstrD(19 downto 16), "1111", RegSrcD(0), RA1);
   ra2mux: mux2 generic map (4) port map(InstrD(3 downto 0), 
-             InstrD(15 downto 12), RegSrcD(1), RA2D);
-  rf: regfile port map(clk, RegWriteW, RA1D, RA2D, WA3W, Result, 
+             InstrD(15 downto 12), RegSrcD(1), RA2);
+  rf: regfile port map(clk, RegWriteW, RA1, RA2, WA3W, Result, 
                       PCPlus4, SrcA, WriteData);
   ext: extend port map(InstrD(23 downto 0), ImmSrcD, ExtImm);
   regDE: regD generic map (32)
-    port map(clk, FlushE, PCSrcW, RegWriteW, MemToRegW, MemWriteD, ALUControlE, BranchD, ALUSrcE, FlagWriteD,
-             InstrD(31 downto 28), Flags, SrcA, WriteData, ExtImm, InstrD(15 downto 12), RA1D, RA2D, PCSrcE, RegWriteE, 
+    port map(clk, PCSrcW, RegWriteW, MemToRegW, MemWriteD, ALUControlE, "00000000000000000000000000000000", ALUSrcE, FlagWriteD,
+             InstrD(31 downto 28), "0000", SrcA, WriteData, ExtImm, InstrD(15 downto 12), PCSrcE, RegWriteE, 
              MemtoRegE, MemWriteE, ALUControlEx, BranchE, ALUSrcEx, FlagWriteE, CondE, FlagsE, rd1E,
-             rd2E, ExtImmE, WA3E, RA1E, RA2E);
-  PCSrcD <= PCSrcW;
+             rd2E, ExtImmE, WA3E);
 
   -- Execute Stage
-  muxSrcA: mux4 generic map(32)
-    port map(rd1E, Result, ALUOutM, "00000000000000000000000000000000", ForwardAE, SrcAE);
-  muxSrcB: mux4 generic map(32)
-    port map(rd2E, Result, ALUOutM, "00000000000000000000000000000000", ForwardBE, WriteDataE);
+  -- muxSrcA: mux4 generic map(32)
+  --   port map(rd1E, Result, ALUOutM, "00000000000000000000000000000000", ForwardAE, SrcAE);
+  -- muxSrcB: mux4 generic map(32)
+  --   port map(rd2E, Result, ALUOutM, "00000000000000000000000000000000", ForwardBE, WriteDataE);
   srcbmux: mux2 generic map(32) 
-    port map(WriteDataE, ExtImmE, ALUSrcE, SrcBE);
-  i_alu: alu port map(SrcAE, SrcBE, ALUControlE, ALUResultE, ALUFlags);
+    port map(rd2E, ExtImmE, ALUSrcE, SrcBE);
+  i_alu: alu port map(rd1E, SrcBE, ALUControlE, ALUResultE, ALUFlags);
   regEM: regE generic map (32)
     port map(clk, PCSrcE, RegWriteE, MemtoRegE, MemWriteE, ALUResultE, WriteDataE, WA3E,
              PCSrcM, RegWriteM, MemtoRegM, MemWriteM, ALUOutM, WriteDataM, WA3M);
@@ -835,33 +637,30 @@ end;
 
 library IEEE; use IEEE.STD_LOGIC_1164.all;
 entity regF is 
-  port(clk, reset, en:    in STD_LOGIC;
+  port(clk:    in STD_LOGIC;
        instrF: in STD_LOGIC_VECTOR(31 downto 0);
        instrD: out STD_LOGIC_VECTOR(31 downto 0));
 end regF;
 
 architecture behave of regF is
 begin
-  process(clk, reset)
+  process(clk)
   begin
-    if reset then InstrD <= (others => '0');
-    elsif(clk'event and clk = '1') then
-      if en then
-        instrD <= instrF;
-      end if;
+    if(clk'event and clk = '1') then
+      instrD <= instrF;
     end if;
   end process;
 end behave;
 
 library IEEE; use IEEE.STD_LOGIC_1164.all;
 entity regD is generic(width : integer);
-  port(clk, reset:         in STD_LOGIC;
+  port(clk:         in STD_LOGIC;
        PCSrcD:      in STD_LOGIC;
        RegWriteD:   in STD_LOGIC;
        MemtoRegD:   in STD_LOGIC;
        MemWriteD:   in STD_LOGIC;
        ALUControlD: in STD_LOGIC_VECTOR(1 downto 0);
-       BranchD:     in STD_LOGIC;
+       BranchD:     in STD_LOGIC_VECTOR(width-1 downto 0);
        ALUSrcD:     in STD_LOGIC;
        FlagWriteD:  in STD_LOGIC_VECTOR (1 downto 0);
        CondD:       in STD_LOGIC_VECTOR(3 downto 0);
@@ -870,14 +669,12 @@ entity regD is generic(width : integer);
        rd2D:        in STD_LOGIC_VECTOR(width-1 downto 0);
        ExtImmD:     in STD_LOGIC_VECTOR(31 downto 0);
        WA3D:        in STD_LOGIC_VECTOR(3 downto 0);
-	   RA1D:        in STD_LOGIC_VECTOR(3 downto 0);
-       RA2D:        in STD_LOGIC_VECTOR(3 downto 0);
        PCSrcE:      out STD_LOGIC;
        RegWriteE:   out STD_LOGIC;
        MemtoRegE:   out STD_LOGIC;
        MemWriteE:   out STD_LOGIC;
        ALUControlE: out STD_LOGIC_VECTOR(1 downto 0);
-       BranchE:     out STD_LOGIC;
+       BranchE:     out STD_LOGIC_VECTOR(width-1 downto 0);
        ALUSrcE:     out STD_LOGIC; 
        FlagWriteE:  out STD_LOGIC_VECTOR(1 downto 0);
        CondE:       out STD_LOGIC_VECTOR(3 downto 0);
@@ -885,33 +682,14 @@ entity regD is generic(width : integer);
        rd1E:        out STD_LOGIC_VECTOR(width-1 downto 0); 
        rd2E:        out STD_LOGIC_VECTOR(width-1 downto 0);
        ExtImmE:     out STD_LOGIC_VECTOR(31 downto 0);
-       WA3E:        out STD_LOGIC_VECTOR(3 downto 0);
-	   RA1E:		out STD_LOGIC_VECTOR(3 downto 0);
-	   RA2E:		out STD_LOGIC_VECTOR(3 downto 0));
+       WA3E:        out STD_LOGIC_VECTOR(3 downto 0));
 end regD;
 
 architecture behave of regD is
 begin
-  process(clk, reset)
+  process(clk)
   begin
-    if reset then  
-      PCSrcE <= '0';
-      RegWriteE <= '0';
-      MemtoRegE <= '0';
-      MemWriteE <= '0';
-      ALUControlE <= (others => '0');
-      BranchE <= '0';
-      ALUSrcE <= '0';
-      FlagWriteE <= (others => '0');
-      CondE <= (others => '0');
-      FlagsE <= (others => '0');
-      rd1E <= (others => '0');
-      rd2E <= (others => '0');
-      ExtImmE <= (others => '0');
-      WA3E <= (others => '0');
-	  RA1E <= (others => '0');
-	  RA2E <= (others => '0');
-    elsif(clk'event and clk = '1') then
+    if(clk'event and clk = '1') then
       PCSrcE <= PCSrcD;
       RegWriteE <= RegWriteD;
       MemtoRegE <= MemtoRegD;
@@ -926,8 +704,6 @@ begin
       rd2E <= rd2D;
       ExtImmE <= ExtImmD;
       WA3E <= WA3D;
-	  RA1E <= RA1D;
-	  RA2E <= RA2D;
     end if;
   end process;
 end behave;
